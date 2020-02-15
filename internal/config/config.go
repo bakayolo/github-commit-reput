@@ -8,10 +8,28 @@ import (
 
 var (
 	LogLevel string
+
+	GitUsername    string
+	GitCommitQueue string
+
+	TwitterKeyword        string
+	TwitterConsumerKey    string
+	TwitterConsumerSecret string
+	TwitterAccessToken    string
+	TwitterAccessSecret   string
 )
 
 func LoadConfig() {
 	LogLevel = parseString("LOG_LEVEL")
+
+	GitUsername = parseString("GIT_USERNAME")
+	GitCommitQueue = parseString("GIT_COMMIT_QUEUE")
+
+	TwitterKeyword = parseString("TWITTER_KEYWORD")
+	TwitterConsumerKey = parseString("TWITTER_CONSUMER_KEY")
+	TwitterConsumerSecret = parseString("TWITTER_CONSUMER_SECRET")
+	TwitterAccessToken = parseString("TWITTER_ACCESS_TOKEN")
+	TwitterAccessSecret = parseString("TWITTER_ACCESS_SECRET")
 }
 
 func parseString(key string) string {
