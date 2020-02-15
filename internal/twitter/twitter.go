@@ -2,6 +2,8 @@ package twitter
 
 import (
 	globalConfig "github-commit-reput/internal/config"
+	"github-commit-reput/internal/encrypt"
+	"github-commit-reput/internal/file"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"github.com/rs/zerolog/log"
@@ -21,7 +23,7 @@ func StartStreaming() {
 	// even if not using it at the moment
 	demux := twitter.NewSwitchDemux()
 	demux.Tweet = func(tweet *twitter.Tweet) {
-		log.Debug().Msgf("Received tweet: %v", tweet)
+		processTweet(tweet)
 	}
 
 	filterParams := &twitter.StreamFilterParams{
@@ -44,4 +46,15 @@ func StartStreaming() {
 	log.Info().Msgf("Stopping stream - received %v", <-ch)
 
 	stream.Stop()
+}
+
+func processTweet(tweet *twitter.Tweet) {
+	log.Debug().Msgf("Received tweet: %v", tweet)
+	message, err := encrypt.Encrypt(tweet.Text)
+	if err != nil {
+		log.Panic().Err(err).Msg("Error encrypting the message")
+	}
+	if err := file.WriteRepo(message, tweet.IDStr); err != nil {
+		log.Panic().Err(err)
+	}
 }

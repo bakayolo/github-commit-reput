@@ -11,12 +11,15 @@ var (
 
 	GitUsername    string
 	GitCommitQueue string
+	GitDeployKey   string
 
 	TwitterKeyword        string
 	TwitterConsumerKey    string
 	TwitterConsumerSecret string
 	TwitterAccessToken    string
 	TwitterAccessSecret   string
+
+	RepoPath string
 )
 
 func LoadConfig() {
@@ -24,12 +27,15 @@ func LoadConfig() {
 
 	GitUsername = parseString("GIT_USERNAME")
 	GitCommitQueue = parseString("GIT_COMMIT_QUEUE")
+	GitDeployKey = parseString("GIT_DEPLOY_KEY")
 
 	TwitterKeyword = parseString("TWITTER_KEYWORD")
 	TwitterConsumerKey = parseString("TWITTER_CONSUMER_KEY")
 	TwitterConsumerSecret = parseString("TWITTER_CONSUMER_SECRET")
 	TwitterAccessToken = parseString("TWITTER_ACCESS_TOKEN")
 	TwitterAccessSecret = parseString("TWITTER_ACCESS_SECRET")
+
+	RepoPath = parseString("REPO_PATH")
 }
 
 func parseString(key string) string {
