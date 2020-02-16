@@ -89,7 +89,7 @@ func generateAuth(key []byte) error {
 }
 
 func pullRepoIfExist() error {
-	// does not work with go-git at the moment...
+	// TODO does not work with go-git at the moment...
 	hackSparseCheckout()
 
 	workTree, err := repo.Worktree()
