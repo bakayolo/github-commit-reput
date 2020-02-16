@@ -54,7 +54,7 @@ func processTweet(tweet *twitter.Tweet) {
 	if err != nil {
 		log.Panic().Err(err).Msg("Error encrypting the message")
 	}
-	if err := file.WriteRepo(message, tweet.IDStr); err != nil {
+	if err := file.WriteInFolder(message, tweet.IDStr); err != nil {
 		log.Panic().Err(err)
 	}
 }

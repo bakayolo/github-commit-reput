@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rs/zerolog/log"
 	"os"
@@ -10,8 +11,10 @@ var (
 	LogLevel string
 
 	GitUsername    string
+	GitEmail       string
 	GitCommitQueue string
-	GitDeployKey   string
+	GitRepo        string
+	GitDeployKey   []byte
 
 	TwitterKeyword        string
 	TwitterConsumerKey    string
@@ -23,11 +26,18 @@ var (
 )
 
 func LoadConfig() {
+	var err error
+
 	LogLevel = parseString("LOG_LEVEL")
 
 	GitUsername = parseString("GIT_USERNAME")
+	GitEmail = parseString("GIT_EMAIL")
 	GitCommitQueue = parseString("GIT_COMMIT_QUEUE")
-	GitDeployKey = parseString("GIT_DEPLOY_KEY")
+	GitRepo = parseString("GIT_REPO")
+	GitDeployKey, err = base64.StdEncoding.DecodeString(parseString("GIT_DEPLOY_KEY"))
+	if err != nil {
+		log.Panic().Err(err).Msgf("Error decoding GIT_DEPLOY_KEY")
+	}
 
 	TwitterKeyword = parseString("TWITTER_KEYWORD")
 	TwitterConsumerKey = parseString("TWITTER_CONSUMER_KEY")

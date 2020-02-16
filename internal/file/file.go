@@ -3,16 +3,25 @@ package file
 import (
 	"bufio"
 	"fmt"
-	"github-commit-reput/internal/config"
 	"github.com/rs/zerolog/log"
 	"os"
 	"time"
 )
 
-func WriteRepo(message, id string) error {
-	currentDate := time.Now().Format("2006-01-02")
-	path := fmt.Sprintf("%v/%v/%v", config.RepoPath, config.GitUsername, currentDate)
+var globalPath string
 
+func InitFolder(path string) error {
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		log.Error().Err(err).Msgf("Error creating folder %v", path)
+		return err
+	}
+	globalPath = path
+	return nil
+}
+
+func WriteInFolder(message, id string) error {
+	currentDate := time.Now().Format("2006-01-02")
+	path := fmt.Sprintf("%v/%v", globalPath, currentDate)
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		log.Error().Err(err).Msgf("Error creating folder %v", path)
 		return err
