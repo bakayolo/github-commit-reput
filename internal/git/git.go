@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	ssh2 "golang.org/x/crypto/ssh"
@@ -8,15 +9,18 @@ import (
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
+	"os/exec"
 	"time"
 )
 
 var (
-	repo *goGit.Repository
-	auth *ssh.PublicKeys
+	repo     *goGit.Repository
+	auth     *ssh.PublicKeys
+	repoPath string
 )
 
 func InitRepo(path, repoName, username string, key []byte) error {
+	repoPath = path
 	var err error
 	repo, err = goGit.PlainInit(path, false)
 	if err != nil {
@@ -54,6 +58,25 @@ func InitRepo(path, repoName, username string, key []byte) error {
 	return nil
 }
 
+func runCommand(arg string) {
+	cmd := exec.Command("sh", "-c", arg)
+	cmd.Dir = repoPath
+	var out, outErr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &outErr
+	if err := cmd.Run(); err != nil {
+		log.Error().Err(err).Msgf("Cannot run command - %v - %v", out.String(), outErr.String())
+	}
+
+}
+
+// very ugly but go-git does not support sparse checkout and we don't want to download the whole repo
+func hackSparseCheckout() {
+	runCommand("git config core.sparsecheckout true")
+	runCommand("mkdir .git/info")
+	runCommand("echo '/*' > .git/info/sparse-checkout")
+}
+
 func generateAuth(key []byte) error {
 	var err error
 	auth, err = ssh.NewPublicKeys("git", key, "")
@@ -66,6 +89,9 @@ func generateAuth(key []byte) error {
 }
 
 func pullRepoIfExist() error {
+	// does not work with go-git at the moment...
+	hackSparseCheckout()
+
 	workTree, err := repo.Worktree()
 	if err != nil {
 		log.Error().Err(err).Msgf("Error getting WorkTree")
