@@ -13,12 +13,14 @@ const (
 	keyLength = 2048
 )
 
-func GenerateKey() {
+func GenerateKey() error {
 	privateKey, err := rsa.GenerateKey(rand.Reader, keyLength)
 	if err != nil {
-		log.Panic().Err(err).Msgf("Error generating private key")
+		log.Error().Err(err).Msgf("Error generating private key")
+		return err
 	}
 	publicKey = privateKey.PublicKey
+	return nil
 }
 
 func Encrypt(message string) (string, error) {
