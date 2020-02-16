@@ -5,10 +5,9 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 	"github.com/rs/zerolog/log"
-	"os"
-	"os/signal"
-	"syscall"
 )
+
+var stream *twitter.Stream
 
 func StartStreaming(consumerKey, consumerTwitter, accessToken, accessSecret, keyword string) error {
 	config := oauth1.NewConfig(consumerKey, consumerTwitter)
@@ -29,7 +28,8 @@ func StartStreaming(consumerKey, consumerTwitter, accessToken, accessSecret, key
 		StallWarnings: twitter.Bool(true),
 	}
 
-	stream, err := client.Streams.Filter(filterParams)
+	var err error
+	stream, err = client.Streams.Filter(filterParams)
 	if err != nil {
 		log.Error().Err(err).Msgf("Error starting the stream")
 		return err
@@ -39,12 +39,10 @@ func StartStreaming(consumerKey, consumerTwitter, accessToken, accessSecret, key
 
 	log.Info().Msgf("Starting stream on keyword %v", keyword)
 
-	// Wait for SIGINT and SIGTERM (HIT CTRL-C)
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Info().Msgf("Stopping stream - received %v", <-ch)
-
-	stream.Stop()
-
 	return nil
+}
+
+func StopStreaming() {
+	log.Info().Msgf("Stopping stream")
+	stream.Stop()
 }

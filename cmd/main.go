@@ -10,6 +10,10 @@ import (
 	"github-commit-reput/internal/twitter"
 	"github-commit-reput/internal/utils"
 	"github.com/rs/zerolog/log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 // TODO I had to duplicate several lines of code in order to be faster. Deal with that later.
@@ -33,14 +37,27 @@ func main() {
 		log.Panic().Msgf("Error initiating repo %v", path)
 	}
 
-	// start twitter streaming
-	if err :=
-		twitter.StartStreaming(
-			globalConfig.TwitterConsumerKey,
-			globalConfig.TwitterConsumerSecret,
-			globalConfig.TwitterAccessToken,
-			globalConfig.TwitterAccessSecret,
-			globalConfig.TwitterKeyword); err != nil {
+	err := twitter.StartStreaming(
+		globalConfig.TwitterConsumerKey,
+		globalConfig.TwitterConsumerSecret,
+		globalConfig.TwitterAccessToken,
+		globalConfig.TwitterAccessSecret,
+		globalConfig.TwitterKeyword)
+
+	if err != nil {
 		log.Panic().Msgf("Error streaming")
 	}
+
+	// Wait for SIGINT and SIGTERM (HIT CTRL-C)
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sign := <-ch:
+		log.Info().Msgf("Killing signal received %v", sign)
+	case <-time.After(time.Duration(globalConfig.Timeout) * time.Second):
+		log.Info().Msgf("Timeout after %v seconds", time.Duration(globalConfig.Timeout)*time.Second)
+	}
+
+	twitter.StopStreaming()
 }

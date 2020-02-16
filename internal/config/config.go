@@ -5,10 +5,13 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rs/zerolog/log"
 	"os"
+	"strconv"
 )
 
 var (
 	LogLevel string
+
+	Timeout int
 
 	GitUsername    string
 	GitEmail       string
@@ -29,6 +32,11 @@ func LoadConfig() {
 	var err error
 
 	LogLevel = parseString("LOG_LEVEL")
+
+	Timeout, err = strconv.Atoi(parseString("TIMEOUT"))
+	if err != nil {
+		log.Panic().Err(err).Msgf("TIMEOUT should be an integer")
+	}
 
 	GitUsername = parseString("GIT_USERNAME")
 	GitEmail = parseString("GIT_EMAIL")
