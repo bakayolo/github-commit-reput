@@ -33,7 +33,7 @@ func main() {
 		log.Panic().Msgf("Error initiating folder %v", path)
 	}
 	// init repository in the folder
-	if err := git.InitRepo(path, globalConfig.GitRepo, globalConfig.GitUsername, globalConfig.GitDeployKey); err != nil {
+	if err := git.InitRepo(path, globalConfig.GitRepo, globalConfig.GitUsername, globalConfig.GitDeployKey, globalConfig.GitCommitQueue); err != nil {
 		log.Panic().Msgf("Error initiating repo %v", path)
 	}
 

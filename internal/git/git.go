@@ -14,13 +14,17 @@ import (
 )
 
 var (
-	repo     *goGit.Repository
-	auth     *ssh.PublicKeys
-	repoPath string
+	repo          *goGit.Repository
+	auth          *ssh.PublicKeys
+	repoPath      string
+	untrackedFile int
+	commitQueue   int
 )
 
-func InitRepo(path, repoName, username string, key []byte) error {
+func InitRepo(path, repoName, username string, key []byte, queue int) error {
 	repoPath = path
+	untrackedFile = 0
+	commitQueue = queue
 	var err error
 	repo, err = goGit.PlainInit(path, false)
 	if err != nil {
@@ -123,33 +127,37 @@ func CommitAndPushRepo(username, email string) error {
 	if status.IsClean() { // nothing to do
 		log.Debug().Msg("Git status clean -> nothing to commit")
 		return nil
-	}
+	} else if untrackedFile < commitQueue {
+		untrackedFile++
+		log.Debug().Msgf("UntrackedFile %v < commitQueue %v", untrackedFile, commitQueue)
+	} else {
+		_, err = workTree.Add(".") // add everything to the staging area
+		if err != nil {
+			log.Error().Err(err).Msgf("Error adding new files to the staging area")
+			return err
+		}
 
-	_, err = workTree.Add(".") // add everything to the staging area
-	if err != nil {
-		log.Error().Err(err).Msgf("Error adding new files to the staging area")
-		return err
-	}
+		_, err = workTree.Commit(fmt.Sprintf("New content from twitter - %v", time.Now().Format("2006-01-02 15:04:05")), &goGit.CommitOptions{
+			Author: &object.Signature{
+				Name:  username,
+				Email: email,
+				When:  time.Now(),
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msgf("Error committing the staging area to the repository")
+			return err
+		}
 
-	_, err = workTree.Commit(fmt.Sprintf("New content from twitter - %v", time.Now().Format("2006-01-02 15:04:05")), &goGit.CommitOptions{
-		Author: &object.Signature{
-			Name:  username,
-			Email: email,
-			When:  time.Now(),
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msgf("Error committing the staging area to the repository")
-		return err
-	}
+		err = repo.Push(&goGit.PushOptions{Auth: auth})
+		if err != nil {
+			log.Error().Err(err).Msgf("Error pushing the repository")
+			return err
+		}
 
-	err = repo.Push(&goGit.PushOptions{Auth: auth})
-	if err != nil {
-		log.Error().Err(err).Msgf("Error pushing the repository")
-		return err
+		log.Info().Msgf("Successfully pushed %v files  to the repository", untrackedFile)
+		untrackedFile = 0
 	}
-
-	log.Debug().Msg("Successfully pushed commit(s) to the repository")
 
 	return err
 }

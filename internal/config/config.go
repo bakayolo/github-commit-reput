@@ -15,7 +15,7 @@ var (
 
 	GitUsername    string
 	GitEmail       string
-	GitCommitQueue string
+	GitCommitQueue int
 	GitRepo        string
 	GitDeployKey   []byte
 
@@ -40,7 +40,10 @@ func LoadConfig() {
 
 	GitUsername = parseString("GIT_USERNAME")
 	GitEmail = parseString("GIT_EMAIL")
-	GitCommitQueue = parseString("GIT_COMMIT_QUEUE")
+	GitCommitQueue, err = strconv.Atoi(parseString("GIT_COMMIT_QUEUE"))
+	if err != nil {
+		log.Panic().Err(err).Msgf("GIT_COMMIT_QUEUE should be an integer")
+	}
 	GitRepo = parseString("GIT_REPO")
 	GitDeployKey, err = base64.StdEncoding.DecodeString(parseString("GIT_DEPLOY_KEY"))
 	if err != nil {
