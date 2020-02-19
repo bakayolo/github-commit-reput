@@ -9,22 +9,27 @@ import (
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
+	"math/rand"
 	"os/exec"
 	"time"
 )
 
 var (
-	repo          *goGit.Repository
-	auth          *ssh.PublicKeys
-	repoPath      string
-	untrackedFile int
-	commitQueue   int
+	repo           *goGit.Repository
+	auth           *ssh.PublicKeys
+	repoPath       string
+	untrackedFile  int
+	commitQueueMin int
+	commitQueueMax int
+	commitQueue    int
 )
 
-func InitRepo(path, repoName, username string, key []byte, queue int) error {
+func InitRepo(path, repoName, username string, key []byte, queueMin, queueMax int) error {
 	repoPath = path
 	untrackedFile = 0
-	commitQueue = queue
+	commitQueueMin = queueMin
+	commitQueueMax = queueMax
+	commitQueue = calculateNewCommitQueue()
 	var err error
 	repo, err = goGit.PlainInit(path, false)
 	if err != nil {
@@ -60,6 +65,11 @@ func InitRepo(path, repoName, username string, key []byte, queue int) error {
 
 	_ = pullRepoIfExist()
 	return nil
+}
+
+func calculateNewCommitQueue() int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(commitQueueMax-commitQueueMin+1) + commitQueueMin
 }
 
 func runCommand(arg string) {
@@ -137,7 +147,7 @@ func CommitAndPushRepo(username, email string) error {
 			return err
 		}
 
-		_, err = workTree.Commit(fmt.Sprintf("New content from twitter - %v", time.Now().Format("2006-01-02 15:04:05")), &goGit.CommitOptions{
+		_, err = workTree.Commit(fmt.Sprintf("New content from commit-reput - %v", time.Now().Format("2006-01-02 15:04:05")), &goGit.CommitOptions{
 			Author: &object.Signature{
 				Name:  username,
 				Email: email,
@@ -157,6 +167,7 @@ func CommitAndPushRepo(username, email string) error {
 
 		log.Info().Msgf("Successfully pushed %v files  to the repository", untrackedFile)
 		untrackedFile = 0
+		commitQueue = calculateNewCommitQueue() // we reset the commitQueue to a new number of files
 	}
 
 	return err

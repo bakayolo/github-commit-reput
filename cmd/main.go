@@ -33,7 +33,7 @@ func main() {
 		log.Panic().Msgf("Error initiating folder %v", path)
 	}
 	// init repository in the folder
-	if err := git.InitRepo(path, globalConfig.GitRepo, globalConfig.GitUsername, globalConfig.GitDeployKey, globalConfig.GitCommitQueue); err != nil {
+	if err := git.InitRepo(path, globalConfig.GitRepo, globalConfig.GitUsername, globalConfig.GitDeployKey, globalConfig.GitCommitQueueMin, globalConfig.GitCommitQueueMax); err != nil {
 		log.Panic().Msgf("Error initiating repo %v", path)
 	}
 
@@ -56,6 +56,7 @@ func main() {
 	case sign := <-ch:
 		log.Info().Msgf("Killing signal received %v", sign)
 	case <-time.After(time.Duration(globalConfig.Timeout) * time.Second):
+		_ = git.CommitAndPushRepo(globalConfig.GitUsername, globalConfig.GitEmail) // push before timeout
 		log.Info().Msgf("Timeout after %v seconds", time.Duration(globalConfig.Timeout)*time.Second)
 	}
 

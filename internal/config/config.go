@@ -13,11 +13,12 @@ var (
 
 	Timeout int
 
-	GitUsername    string
-	GitEmail       string
-	GitCommitQueue int
-	GitRepo        string
-	GitDeployKey   []byte
+	GitUsername       string
+	GitEmail          string
+	GitCommitQueueMin int
+	GitCommitQueueMax int
+	GitRepo           string
+	GitDeployKey      []byte
 
 	TwitterKeyword        string
 	TwitterConsumerKey    string
@@ -33,17 +34,12 @@ func LoadConfig() {
 
 	LogLevel = parseString("LOG_LEVEL")
 
-	Timeout, err = strconv.Atoi(parseString("TIMEOUT"))
-	if err != nil {
-		log.Panic().Err(err).Msgf("TIMEOUT should be an integer")
-	}
+	Timeout = parseInt("TIMEOUT")
 
 	GitUsername = parseString("GIT_USERNAME")
 	GitEmail = parseString("GIT_EMAIL")
-	GitCommitQueue, err = strconv.Atoi(parseString("GIT_COMMIT_QUEUE"))
-	if err != nil {
-		log.Panic().Err(err).Msgf("GIT_COMMIT_QUEUE should be an integer")
-	}
+	GitCommitQueueMin = parseInt("GIT_COMMIT_QUEUE_MIN")
+	GitCommitQueueMax = parseInt("GIT_COMMIT_QUEUE_MAX")
 	GitRepo = parseString("GIT_REPO")
 	GitDeployKey, err = base64.StdEncoding.DecodeString(parseString("GIT_DEPLOY_KEY"))
 	if err != nil {
@@ -68,4 +64,13 @@ func parseString(key string) string {
 		log.Info().Msgf("Successfully loaded env var: %v=%v", key, value)
 	}
 	return value
+}
+
+func parseInt(key string) int {
+	intValue, err := strconv.Atoi(parseString(key))
+	if err != nil {
+		log.Panic().Err(err).Msgf("%v should be an integer", key)
+	}
+
+	return intValue
 }
