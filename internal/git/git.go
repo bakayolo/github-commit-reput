@@ -24,7 +24,7 @@ var (
 	commitQueue    int
 )
 
-func InitRepo(path, repoName, username string, key []byte, queueMin, queueMax int) error {
+func InitRepo(path, gitRepo string, key []byte, queueMin, queueMax int) error {
 	repoPath = path
 	untrackedFile = 0
 	commitQueueMin = queueMin
@@ -51,7 +51,7 @@ func InitRepo(path, repoName, username string, key []byte, queueMin, queueMax in
 	// repo need to be initiated
 	_, err = repo.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
-		URLs: []string{fmt.Sprintf("git@github.com:%v/%v.git", username, repoName)},
+		URLs: []string{fmt.Sprintf("git@github.com:%v.git", gitRepo)},
 	})
 	if err != nil {
 		log.Error().Err(err).Msgf("Error creating remote repository config")
@@ -138,8 +138,8 @@ func CommitAndPushRepo(username, email string) error {
 		log.Debug().Msg("Git status clean -> nothing to commit")
 		return nil
 	} else if untrackedFile < commitQueue {
-		untrackedFile++
 		log.Debug().Msgf("UntrackedFile %v < commitQueue %v", untrackedFile, commitQueue)
+		untrackedFile++
 	} else {
 		_, err = workTree.Add(".") // add everything to the staging area
 		if err != nil {

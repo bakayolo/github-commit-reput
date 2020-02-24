@@ -62,7 +62,7 @@ docker run --env $ENVIRONMENT_VARIABLES github-commit-repo
 | `GIT_EMAIL`               | Github Email                                             |                    |
 | `GIT_COMMIT_QUEUE_MIN`    | Minimum number of commits that will committed each round | `2`                |
 | `GIT_COMMIT_QUEUE_MAX`    | Maximum number of commits that will committed each round | `5`                |
-| `GIT_REPO`                | Name of the private github repository                    | `commit-reput-bot` |
+| `GIT_REPO`                | [Organization]/[Repository] in github                    |                    |
 | `GIT_DEPLOY_KEY`          | Github Deployment Key encoded in Base64                  |                    |
 | `TWITTER_KEYWORD`         | Twitter keyword to follow                                | `COVID2019`        |
 | `TWITTER_CONSUMER_KEY`    | Twitter Consumer Key                                     |                    |
